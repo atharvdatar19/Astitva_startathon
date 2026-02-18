@@ -1,258 +1,189 @@
-Startathon Hackathon 2026
 Domain‑Robust Semantic Segmentation for Synthetic Desert Environments
-TEAM ASTITVA: Atharv Datar · Raunak Sharma · Raghav Mishra · Aditi Sharma
+TEAM ASTITVA
+Atharv Datar | Raunak Sharma | Raghav Mishra | Aditi Sharma
+STARTATHON 2026
 
-1. Introduction
-Semantic segmentation enables pixel‑level scene understanding by assigning a semantic class label to every pixel in an image. In autonomous desert navigation scenarios, such fine‑grained perception is essential for obstacle detection, terrain classification, and safe path planning.
+1. Introduction – Problem Statement
+Autonomous navigation in desert and off-road environments presents a significant challenge due to visually similar terrain classes such as sand, dry grass, bushes, and ground clutter. Traditional computer vision techniques struggle to differentiate these categories at the pixel level.
 
-Desert and off‑road environments present unique challenges:
+To address this, we developed a deep learning–based multi-class semantic segmentation system capable of performing pixel-level terrain classification under synthetic desert simulation conditions.
 
-High visual similarity between terrain classes
+Our objective:
 
-Irregular vegetation structures
+Train a high-performing segmentation model
 
-Texture overlap between dry grass, soil, and clutter
+Optimize IoU performance
 
-Strong lighting variation
+Ensure generalization to unseen desert environments
 
-To address these challenges, we developed a deep learning–based multi‑class segmentation system trained on synthetic desert environment data. The model is optimized using the Intersection over Union (IoU) metric, which directly evaluates segmentation quality.
+Deliver a reproducible and efficient inference pipeline
 
-2. Dataset Overview
-The dataset was generated using FalconEditor and contains synthetic desert twin environments.
+2. Methodology
+2.1 Dataset
+The dataset consists of:
 
-Structure
-Each split contains:
+RGB desert environment images
 
-Color_Images/ – RGB input images
+Pixel-level segmentation masks
 
-Segmentation/ – Pixel‑wise ground truth masks
+10 terrain classes:
 
-The dataset is divided into:
+Trees
 
-Training set
+Lush Bushes
 
-Validation set
+Dry Grass
 
-Testing set (images only)
+Dry Bushes
 
-Semantic Classes
-ID	Class Name
-100	Trees
-200	Lush Bushes
-300	Dry Grass
-500	Dry Bushes
-550	Ground Clutter
-600	Flowers
-700	Logs
-800	Rocks
-7100	Landscape
-10000	Sky
-The “Landscape” class represents general ground regions not belonging to other categories.
+Ground Clutter
 
-The dataset introduces domain shift between training and testing desert twins, requiring the model to generalize beyond memorization.
+Flowers
 
-3. Methodology
-3.1 Model Architecture
-We implemented a DINOv2 Vision Transformer backbone (ViT‑S/14) combined with a custom convolutional segmentation head.
+Logs
 
-Architecture Components:
-Backbone (Frozen initially):
+Rocks
 
-Pretrained DINOv2 ViT‑S/14
+Landscape
 
-Extracts high‑level semantic patch embeddings
+Sky
 
-Patch size: 14×14
+Train and Validation splits were used for supervised learning.
 
-Segmentation Head:
+2.2 Model Architecture
+We used a hybrid segmentation architecture:
 
-Convolutional layers
+Backbone: DINOv2 Vision Transformer (ViT-S/14)
 
-Depthwise separable convolutions
+Segmentation Head: ConvNeXt-style convolutional head
 
-Upsampling via bilinear interpolation
+Patch size: 14 × 14
 
-Final 1×1 classifier
+Resolution adjusted to multiples of 14
 
-This hybrid design allows:
+The backbone extracts high-level semantic features, and the convolutional head refines them into dense pixel predictions.
 
-Strong semantic representation from pretrained transformer
+2.3 Optimization Strategy
+To maximize IoU performance:
 
-Efficient pixel reconstruction through convolutional decoding
+Backbone initially frozen, later partially unfrozen
 
-3.2 Training Strategy
-To maximize IoU performance, we implemented:
+Loss Function:
 
-1️⃣ Loss Function
-A combined loss:
+CrossEntropy Loss
 
-Cross‑Entropy Loss
-
-Dice Loss (IoU‑aligned optimization)
-
-This improves:
-
-Class imbalance handling
-
-Boundary accuracy
-
-Small object segmentation
-
-2️⃣ Data Augmentation
-Random Horizontal Flip
-
-Color Jitter
-
-Controlled resizing (multiple of patch size 14)
-
-This improves domain robustness and prevents overfitting.
-
-3️⃣ Optimization
-Optimizer: AdamW
-
-Learning rate: 1e‑4
+Dice Loss (IoU-oriented optimization)
 
 Mixed Precision (AMP) for faster GPU training
 
-Best model checkpoint saved based on Validation IoU
+AdamW optimizer
 
-4. Evaluation Metric
-Intersection over Union (IoU)
-IoU measures overlap between predicted segmentation and ground truth:
+Strong augmentations:
 
-I
-o
-U
-=
-I
-n
-t
-e
-r
-s
-e
-c
-t
-i
-o
-n
-U
-n
-i
-o
-n
-IoU= 
-Union
-Intersection
-​
- 
-Why IoU?
+Random horizontal flips
 
-Directly evaluates segmentation quality
+Color jitter
 
-Penalizes false positives and false negatives
+Controlled resizing
 
-Primary judging criterion (80% weight)
+3–4. Results & Performance Metrics
+Final Validation Performance
+Best Validation IoU: ~0.36–0.38
 
-We report:
+Pixel Accuracy: ~0.73
 
-Mean IoU across all classes
+Dice Score: ~0.52
 
-Validation IoU per epoch
+Training showed consistent convergence:
 
-Best validation IoU
+Loss decreased steadily
 
-5. Results
-Training Observations
-Validation IoU improved consistently across epochs.
+IoU improved across epochs
 
-Combined Dice + Cross‑Entropy loss stabilized boundary predictions.
+No major overfitting observed
 
-Fine‑tuning improved generalization on unseen desert twins.
+Performance Analysis
+Landscape and Sky achieved highest IoU
 
-Key Performance Metrics
-Validation IoU steadily increased during training.
+Vegetation classes showed moderate confusion
 
-Best model saved based on highest validation IoU.
+Boundary regions (Dry Grass vs Ground Clutter) were hardest to segment
 
-Pixel accuracy remained stable while IoU improved.
+Confusion Observations
+Main confusion areas:
 
-The model demonstrated strong terrain separation capability across vegetation and ground classes.
+Dry Grass ↔ Dry Bushes
 
-6. Failure Case Analysis
-Despite strong performance, certain limitations were observed:
+Ground Clutter ↔ Landscape
 
-Confusion between Dry Grass and Landscape
+Vegetation overlap under lighting variations
 
-Minor misclassification near object boundaries
+This is expected due to visual similarity in desert scenes.
 
-Thin structures (logs, flowers) occasionally under‑segmented
+5–6. Challenges & Solutions
+Challenge 1: Patch Size Constraints
+DINOv2 requires input dimensions divisible by 14.
 
-These errors are expected due to:
+Solution:
+Adjusted image resolution to fixed multiples (532 × 952).
 
-Texture similarity
+Challenge 2: Class Imbalance
+Certain classes like flowers or logs appeared less frequently.
 
-Class imbalance
+Solution:
 
-Resolution downsampling constraints
+Dice Loss added to improve minority class segmentation
 
-Future improvements could include:
+Strong data augmentation applied
 
-Higher resolution training
+Challenge 3: GPU Utilization & Stability
+Initial runs showed inconsistent GPU usage and high training time.
 
-Boundary-aware loss functions
+Solution:
 
-Partial backbone fine‑tuning
+Mixed precision (AMP)
 
-7. Reproducibility
-To reproduce results:
+Backbone freezing during early training
 
-Activate Python environment (Python 3.9+)
+Efficient batch size tuning
 
-Install dependencies from requirements.txt
+Challenge 4: Domain Generalization
+Validation images were from unseen desert twins.
 
-Run:
+Solution:
 
-python train_segmentation.py
-python test_segmentation.py
-The system automatically:
+Robust feature extractor (DINOv2)
 
-Trains model
+Augmentation strategies
 
-Computes IoU
+Careful validation monitoring
 
-Saves best checkpoint
+7. Conclusion
+We successfully implemented a domain-robust multi-class semantic segmentation pipeline optimized for desert environments.
 
-Generates visual outputs
+The system:
 
-Hardware Used:
+Achieves competitive IoU under hackathon constraints
 
-NVIDIA RTX 4050 GPU
+Demonstrates stable convergence
 
-Intel i5 Processor
+Provides reproducible results
 
-8. Conclusion
-This project demonstrates a domain‑robust semantic segmentation pipeline tailored for synthetic desert environments.
+Includes both training and inference pipelines
 
-Key strengths:
+Given the complexity of terrain similarity and limited time constraints, the achieved performance reflects a strong and balanced technical implementation.
 
-Transformer‑based semantic feature extraction
+8. Future Work
+With additional time, we would:
 
-IoU‑aligned loss optimization
+Fine-tune deeper layers of the backbone
 
-Domain‑aware augmentation strategy
+Implement class-weighted loss
 
-Validation‑driven checkpointing
+Add focal loss for harder examples
 
-The model achieves competitive IoU performance while maintaining reproducibility and computational efficiency.
+Increase resolution for sharper boundaries
 
-The solution balances technical performance with practical deployment considerations, making it suitable for real‑world off‑road perception systems.
+Deploy real-time optimized inference
 
-Team ASTITVA
-Atharv Datar
-Raunak Sharma
-Raghav Mishra
-Aditi Sharma
-
-Startathon Hackathon 2026
-
+Integrate temporal smoothing for video sequences
