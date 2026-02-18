@@ -1,0 +1,33 @@
+name: startathon-segmentation
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+
+  # Core Deep Learning
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+
+  # Data & Image Processing
+  - numpy
+  - pillow
+  - opencv
+  - matplotlib
+
+  # Utilities
+  - tqdm
+  - scikit-learn
+
+  # Extra (recommended)
+  - pip
+
+  - pip:
+      # DINOv2 backbone loading
+      - timm
+
+      # Optional speed improvement
+      - xformers
