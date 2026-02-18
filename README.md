@@ -1,249 +1,190 @@
-Stratathon Hackathon Submission
+ Domain‑Robust Semantic Segmentation for Synthetic Desert Environments
+TEAM ASTITVA
+Startathon Hackathon 2026 Submission
 
-🌵 Problem Statement:
+Atharv Datar
+Raunak Sharma
+Raghav Mishra
+Aditi Sharma
 
-Off‑road and desert environments contain visually similar terrain categories such as sand, dry grass, bushes, rocks, and sky. Accurate pixel‑level classification is critical for:
+🚀 Project Overview
+Autonomous navigation in desert and off‑road environments requires precise pixel‑level scene understanding. Terrain types such as sand, dry grass, shrubs, rocks, logs, and sky often appear visually similar, making traditional computer vision approaches unreliable.
 
-Autonomous navigation
+This project implements a deep learning‑based multi‑class semantic segmentation system trained on synthetic desert twin data generated via FalconEditor. The system performs pixel‑wise classification and is optimized for Intersection over Union (IoU) performance under hackathon constraints.
 
-Terrain understanding
+🎯 Objective
+Perform multi‑class semantic segmentation on desert terrain images
 
-Robotics perception
+Maximize Mean IoU score
 
-Off-road vehicle safety systems
+Ensure generalization to unseen validation/test environments
 
-Traditional computer vision approaches struggle in unstructured environments.
-This project implements a deep learning–based multi-class semantic segmentation system optimized for Intersection over Union (IoU).
+Provide an interactive GUI for real‑time inference
 
-💡 Proposed Solution
-We develop a high-performance segmentation pipeline that:
+🧠 Methodology
+1️⃣ Backbone Network
+DINOv2 Vision Transformer (ViT‑S/14)
 
-Classifies each pixel into one of 10 terrain categories
+Pretrained foundation model
 
-Uses transfer learning from a pretrained Vision Transformer
+Frozen backbone during training
 
-Optimizes specifically for IoU performance
+Extracts high‑quality patch embeddings
 
-Runs efficiently on NVIDIA RTX GPUs
+2️⃣ Custom Segmentation Head
+We implemented an enhanced segmentation head featuring:
 
-🧠 Model Architecture
-🔹 Backbone
-We use DINOv2 ViT-S/14 (Vision Transformer) as a pretrained feature extractor.
-
-Loaded via torch.hub
-
-Frozen during training for stability
-
-Provides strong semantic embeddings
-
-Embedding dimension: 384
-
-🔹 Segmentation Head
-A lightweight ConvNeXt-style segmentation head is trained on top of DINOv2 features:
+Convolutional feature extraction
 
 Depthwise separable convolutions
 
-GELU activations
+Multi‑scale ASPP blocks
 
-1×1 classification layer
+Feature fusion layers
 
-Patch reshaping compatible with ViT token output
+Dropout regularization
 
-This hybrid approach combines:
+This improves contextual understanding across large desert scenes.
 
-Transformer-level global understanding
+3️⃣ Loss Functions
+To improve segmentation quality across imbalanced classes:
 
-Convolutional spatial refinement
+Cross Entropy Loss
 
-📂 Dataset Structure
-Dataset is split into:
+Dice Loss (IoU‑oriented optimization)
 
-train/
-    Color_Images/
-    Segmentation/
+Focal Loss (hard class emphasis)
 
-val/
-    Color_Images/
-    Segmentation/
+Final loss combination:
 
-test/
-    Color_Images/
-Each segmentation mask contains pixel values mapped to 10 semantic classes:
-
-Background
-
-Trees
-
-Lush Bushes
-
-Dry Grass
-
-Dry Bushes
-
-Ground Clutter
-
-Logs
-
-Rocks
-
-Landscape
-
-Sky
-
-⚠️ Dataset not included due to size constraints.
-
-⚙️ Training Strategy
-🔥 Loss Function (IoU Optimized)
-We combine:
-
-CrossEntropy Loss
-
-Dice Loss
-
-This improves:
-
-Class balance handling
-
-Boundary precision
-
-Overall IoU score
-
-Final Loss:
-
-Loss = CrossEntropy + DiceLoss
-⚡ Performance Optimizations
-Frozen DINOv2 backbone
-
-Mixed Precision Training (AMP)
-
+0.4 CE + 0.4 Dice + 0.2 Focal
+4️⃣ Optimization Strategy
 AdamW optimizer
 
-Strong augmentations:
+Cosine Learning Rate Scheduler
 
-Horizontal Flip
+Mixed Precision (AMP)
 
-Color Jitter
+Early Stopping
 
-Patch-safe resizing (multiple of 14)
+Best Model Checkpointing
 
-🖥️ Hardware & Environment
-Hardware Used
+📂 Dataset Structure
+Offroad_Segmentation_Training_Dataset/
+│
+├── train/
+│   ├── Color_Images/
+│   ├── Segmentation/
+│
+├── val/
+│   ├── Color_Images/
+│   ├── Segmentation/
+Classes (10 Total)
+ID	Class Name
+0	Background
+100	Trees
+200	Lush Bushes
+300	Dry Grass
+500	Dry Bushes
+550	Ground Clutter
+700	Logs
+800	Rocks
+7100	Landscape
+10000	Sky
+📊 Performance Results
+Best Validation Mean IoU Achieved:
+0.408
+Observations:
+Sky and Landscape achieved high IoU
 
-NVIDIA RTX 4050 (Laptop GPU)
+Fine‑grained vegetation classes remain challenging
 
-Intel i5 (HP Victus)
+Model generalizes well to unseen terrain variations
 
-Software
+🖥️ GUI Demonstration
+An interactive Streamlit GUI was developed for real‑time inference.
 
-Windows 11
+Features:
+Upload custom desert image
 
-Python 3.10+
+Run segmentation prediction
 
-PyTorch
+Visualize predicted mask
 
-torchvision
+Save prediction output
 
-NumPy
-
-OpenCV
-
-tqdm
-
-Matplotlib
-
-GPU usage is automatically detected:
-
-CUDA Available: True
-Using Device: cuda
-📊 Final Validation Results
-Metric	Value
-Best Validation IoU	0.3682
-Validation Dice Score	0.5223
-Validation Pixel Accuracy	0.7299
-Final Training IoU	0.4272
-The model demonstrates:
-
-Strong generalization
-
-Stable convergence
-
-Balanced multi-class performance
-
-▶️ How To Run
-1️⃣ Activate Environment
-conda activate hackenv
-or activate your virtual environment.
-
+Run GUI:
+streamlit run app.py
+▶️ How to Reproduce Results
+1️⃣ Create Environment
+conda env create -f environment.yml
+conda activate startathon-segmentation
 2️⃣ Train Model
 python train_segmentation.py
-Outputs:
+Best model automatically saved as:
 
-Best model saved as BEST_segmentation_head.pth
-
-Training logs printed per epoch
-
-Validation IoU tracked
-
-3️⃣ Run Testing / Inference
+BEST_hackathon_model.pth
+3️⃣ Run Evaluation
 python test_segmentation.py
 Outputs:
 
-Raw predicted masks
+Mean IoU
 
-Colored segmentation masks
+Per‑class IoU
 
-IoU evaluation metrics
+Saved predicted masks
 
-Comparison visualizations
+4️⃣ Run GUI
+streamlit run app.py
+⚙️ Tech Stack
+Python 3.10
 
-Saved inside:
+PyTorch
 
-/predictions/
-📈 Interpretation of Results
-Vegetation and sky classes achieve high IoU.
+Torchvision
 
-Minor boundary noise appears in dry grass vs dry bush regions.
+DINOv2
 
-Overall segmentation is stable and visually consistent.
+OpenCV
 
-Higher IoU indicates better region overlap between predicted and ground truth masks.
+Streamlit
 
-♻️ Reproducibility
-To reproduce results:
+NumPy
 
-Maintain the dataset folder structure.
+Matplotlib
 
-Use default hyperparameters.
+🧩 Challenges Faced
+Severe class imbalance across vegetation types
 
-Train → Validate → Test sequentially.
+High visual similarity between dry grass and dry bushes
 
-Ensure CUDA-enabled GPU is available for optimal performance.
+Domain shift between synthetic and validation environments
 
-🏆 Key Strengths:
+Memory constraints on RTX 4050
 
-Uses modern pretrained Vision Transformer (DINOv2)
+🔮 Future Improvements
+Unfreezing last transformer blocks for fine‑tuning
 
-IoU-optimized hybrid loss function
+Class‑weighted Dice/Focal loss
 
-Efficient GPU-accelerated training
+Data augmentation enhancement
 
-Strong augmentation strategy
+Multi‑scale training
 
-Clean modular training & evaluation pipeline
+Test‑time augmentation
 
-Hackathon-ready reproducibility
+Lightweight deployment model for edge inference
 
-👥 Team:
+🏁 Conclusion
+This project demonstrates a robust approach to synthetic desert semantic segmentation using foundation models and multi‑scale convolutional heads. Despite class imbalance challenges, the system achieves competitive IoU performance and includes a complete training‑evaluation‑deployment pipeline with GUI visualization.
 
+The combination of strong technical implementation and clear documentation makes this solution ready for real‑world off‑road perception systems.
+
+👥 Team ASTITVA
 Atharv Datar
-
 Raunak Sharma
-
 Raghav Mishra
-
 Aditi Sharma
 
-🎯 Final Statement:
-
-This project demonstrates a practical and scalable deep learning solution for off-road semantic segmentation using transformer-based feature extraction and IoU-focused optimization. The model achieves strong validation performance while maintaining computational efficiency suitable for real-world deployment.
+Startathon Hackathon 2026
 
